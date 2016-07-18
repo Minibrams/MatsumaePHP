@@ -1,0 +1,407 @@
+<?php session_start(); ?>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<title>Member</title>
+
+
+
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+
+<link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+<link href="css/NyeStyles.css" rel="stylesheet">
+
+
+
+<script type="text/javascript" src="script/jquery-1.9.1.min.js"></script>
+
+<script type="text/javascript" src="script/bootstrap.js"></script>
+
+
+
+</head>
+
+<body>        
+
+<?php
+
+
+
+include("menu.php");
+
+
+
+// First check if the user is logged in - if not redirect to the welcome page....
+
+if (empty($_SESSION['logged_in'])) {
+
+    include('redirect_home.html');   
+
+}
+
+
+
+
+
+// Then prepare profile fields by fetching contact details from the database
+
+require_once('config1.php');
+
+$email=$_SESSION['username'];
+
+$name=$_SESSION['greeting'];
+
+
+
+$mysqli = new mysqli($dh_name, $db_user, $db_pass, $db_name);
+
+if ($mysqli->connect_errono) {
+
+   printf("Connect failed: %s\n", $mysqli->connect_error);
+
+}
+
+
+
+// To get the telephone prefix from the Land table, I have joined the two tables below 
+
+$sql='SELECT Fornavn, Efternavn, Prefix, Telefon, PASSWORD FROM Person P JOIN Land L ON P.Land = L.Id WHERE Email LIKE "'.$email.'"';   
+
+if ($result=$mysqli->query($sql)) {
+
+    // This is for match in terms of email, we just need to check the encrypted password and then enable the session keys...
+
+    $row = $result->fetch_assoc();
+
+    $fornavn_DB=$row['Fornavn'];
+
+    $efternavn_DB=$row['Efternavn'];
+
+    $prefix=$row['Prefix'];
+
+    $telefon=$row['Telefon'];
+
+    $password_DB=$row['Password'];
+
+    
+
+    $telefon_formatted=$prefix.' '.$telefon;
+
+}
+
+
+
+
+
+// Check the different buttons that could have been pressed to get here
+
+
+
+$msg = '';
+
+$msg_color='#333333';
+
+if (isset($_POST['TurnamentButton1'])){
+
+    // Matsumae turnament clicked - redirect to participants page...
+
+    include('redirect_signup.html');       
+
+}
+
+
+
+if (isset($_POST['PasswordButton'])){
+
+
+
+    // Change Password
+
+
+
+    $new_password=md5($_POST['NewPW']);
+
+    
+
+    $sql='UPDATE  Person SET  Password =  "'.$new_password.'" WHERE Email like "'.$email.'"';
+
+    if (!$result=$mysqli->query($sql)) {
+
+		 die('Error: ' . $mysqli->error);
+
+	  }
+
+
+
+      $msg='Password updated';
+
+      $msg_color='green';    
+
+}
+
+
+
+
+
+if (isset($_POST['ProfileButton'])){
+
+
+
+    // Change Profile
+
+    $sql=sprintf('UPDATE  Person SET  Fornavn =  "%s", Efternavn="%s", Email="%s", Telefon="%s" WHERE Email like "%s"', $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone'], $email);
+
+     if (!$result=$mysqli->query($sql)) {
+
+ 		 die('Error: ' . $mysqli->error);
+
+ 	  }
+
+
+
+       $msg='Profile updated';
+
+       $msg_color='green';    
+
+
+
+}
+
+
+
+
+
+?>
+
+
+
+<form method="post" action="member.php" id="ctl00">
+
+        <section class="container">    
+
+            <section class="jumbotron" style="background-color: #363636;">
+
+
+
+                <section class="container" style="text-align: center">
+
+                    <h2 style="padding-bottom:20px"><?=$name?>, welcome to the Userpage on ETilmelding.com! </h2>
+
+                        <section class="col-lg-4">
+
+                            <p style="font-size: 14px; color:#F4FFB0">
+
+                                Below, you can find an overview of all the tournaments currently available to you.
+
+                            </p>
+
+                        </section>
+
+                        <section class="col-lg-4" style="border-radius:5px; background-color:#404040;">
+
+                            <p style="font-size: 14px; color:#B4FFA1">
+
+                                By pressing the tournament name, you will be taken to the signup form for the given tournament, where you will be prompted to enter all needed information.
+
+                            </p>
+
+                        </section>
+
+                        <section class="col-lg-4">
+
+                            <p style="font-size: 14px; color:#7ADFEB">
+
+                                If you need to change your contact information or your password, these options can be found at the bottom of this page.
+
+                            </p>
+
+                        </section>
+
+                </section>
+
+
+
+                <div style="padding-bottom:40px">
+
+                    <!-- This is here for spacing purposes --> 
+
+                </div>
+
+
+
+                <div style="align: center;">
+
+	                <table cellspacing="0" cellpadding="10" align="Center" rules="all" border="1" id="CPH1_ActiveTournamentsTable" style="border-collapse:collapse;" class="center">
+
+		            <tbody align="center">
+
+		                <tr>
+
+			                <th scope="col">Active Tournaments</th><th scope="col">Last Sign Up Date</th>
+
+		                </tr>
+
+		                <tr>
+
+			                <td><input type="submit" name="TurnamentButton1" value="Matsumae Cup 2017" id="CPH1_ActiveTournamentsTable_Button7_0" class="btn btn-success" style="font-size:Large;"></td>
+
+			                <td style="background-color:LightGreen;">1/18/2017 12:00:00 AM</td>
+
+		                </tr>
+
+	                </tbody>
+
+	                </table>
+
+                </div>
+
+                    
+
+                <br>
+
+
+
+                <div class="form-group">
+
+                    <input id="CPH1_CheckBox1" type="checkbox" name="ctl00$CPH1$CheckBox1" value=0 ><label for="CPH1_CheckBox1">Change password</label>
+
+                    <div class="PasswordSection">
+
+                        <h4 style="color:<?=$msg_color?>"><?=$msg?>
+
+                        <input name="NewPW" type="password" id="CPH1_TextBoxNew1" class="form-control" placeholder="New Password">
+
+                        <input name="NewPW2" type="password" id="CPH1_TextBoxNew2" class="form-control" placeholder="Repeat New Password">
+
+                        <input type="submit" name="PasswordButton" value="Update Password" id="CPH1_ButtonPass" class="form-control">
+
+                    </div>
+
+                </div>
+
+                
+
+                <script>
+
+                
+
+                    // This time I am using jQuery to hide/show the sections for changing the password. The fields will only be shown if the 
+
+                    // checkbox is marked. To make this work, I have created a special division with the class "PasswordSection" around everything above.
+
+
+
+                    $('.PasswordSection').hide();
+
+                    $('#CPH1_CheckBox1').click(function(){
+
+                        if ($(this).is(':checked')) {
+
+                            $('.PasswordSection').show();
+
+                        } else
+
+                            $('.PasswordSection').hide();
+
+                    });
+
+
+
+
+
+                    // Check the second password character by character as typed...
+
+                    $('#CPH1_TextBoxNew2').keyup(function() {
+
+                        if($(this).val() != $('#CPH1_TextBoxNew1').val().substr(0,$(this).val().length)) {
+
+                            alert('confirm password not match');
+
+                        } 
+
+                    });
+
+                
+
+                </script>
+
+                
+
+                <div class="form-group">
+
+                    <input id="CPH1_CheckBox2" type="checkbox" name="ctl00$CPH1$CheckBox2" value=0><label for="CPH1_CheckBox2">Change Contact Info</label>
+
+                    <div class="ProfileSection">
+
+                        <h4 style="color:<?=$msg_color?>"><?=$msg?>
+
+                    
+
+                       <input name="FirstName" type="text" id="CPH1_TextBoxFirst" class="form-control" value="<?=$fornavn_DB?>">
+
+                       <input name="LastName" type="text" id="CPH1_TextBoxLast" class="form-control" value="<?=$efternavn_DB?>">
+
+                       <input name="Email" type="email" id="CPH1_TextBoxEmail" class="form-control" value="<?=$email?>">
+
+                       <input name="Phone" type="tel" id="CPH1_TextBoxPhone" class="form-control" value="<?=$telefon_formatted?>">
+
+                       <input type="submit" name="ProfileButton" value="Update Profile" id="CPH1_ButtonSub" class="form-control">
+
+                    </div>
+
+                </div>
+
+                
+
+                <script>
+
+                
+
+                // This is the same function as for password fields above... 
+
+                
+
+                $('.ProfileSection').hide();
+
+                $('#CPH1_CheckBox2').click(function(){
+
+                    if ($(this).is(':checked'))
+
+                        $('.ProfileSection').show();
+
+                    else
+
+                        $('.ProfileSection').hide();
+
+                    
+
+                })
+
+                
+
+                </script>
+
+                
+
+            </section>             <!-- End Jumbotron section--> 
+
+        </section>
+
+</form>
+
+
+
+<?php
+
+  include("footer.html");
+
+?>
