@@ -187,6 +187,8 @@
                         <input name="ctl00$CPH1$TextBoxPhone" type="tel" id="CPH1_TextBoxPhone" class="form-control" placeholder="Phone Number" style="height:30px;width:200px;">
 
                     </div>
+                            <input type="submit" name="ctl00$CPH1$Button2" value="Register" id="CPH1_Button2" class="btn btn-success btn-lg" data-toggle="modal" href="#submitted">  
+
 
                     </center>
 
@@ -196,9 +198,6 @@
 
         </div>     
 
-        <input type="submit" name="ctl00$CPH1$Button2" value="Register" id="CPH1_Button2" class="btn btn-success btn-lg" data-toggle="modal" href="#submitted">  
-
-        <br>
 
         </div>
 
