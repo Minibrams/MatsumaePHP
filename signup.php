@@ -316,8 +316,7 @@
                 
                 
                 <section class="boxedtext">
-                <p style="font-size: 14px;" class="registration-info">If you're entering as a contestant in another weight class than your primary, you can</p>
-                <p style="font-size: 14px" class="registration-info">choose the appropriate weight class from the dropdown below.</p>
+                <p style="font-size: 14px;" class="registration-info">If you're entering as a contestant in another weight class than your primary, you can choose the appropriate weight class from the dropdown below.</p>
                 <p class="registration-info" style="color: #B4FFA1; font-size: 14px;">If you don't want to enter as a contestant, leave the field empty.</p>    
 
                 <div class="form-group">
@@ -390,9 +389,8 @@
                 
 
                 <section class="boxedtext">
-                <p style="font-size: 14px;" class="registration-info">If you want accomodation for the Matsumae Cup, choose the appripriate accomodation category below.</p>
-                <p style="font-size: 14px" class="registration-info">You can find information about the accomodation categories by clicking <a href=#>here</a></p>
-                <p style="font-size: 14px" class="registration-info">or by navigating to the information page.</p>
+                <p style="font-size: 14px;" class="registration-info">If you want accomodation for the Matsumae Cup, choose the appropriate accomodation category below.</p>
+                <p style="font-size: 14px" class="registration-info">You can find information about the accomodation categories by clicking <a href=#>here</a> or by navigating to the information page.</p>
                 <p class="registration-info" style="color: #F4FFB0; font-size: 14px;">Important: This will add a cost to your total price.</p>    
 
                 <div class="form-group">
@@ -428,8 +426,7 @@
 
                 <section class="boxedtext">
                 <p style="font-size: 14px;" class="registration-info">If you want accomodation for the Matsumae Cup Camp, choose the appripriate accomodation category below.</p>
-                <p style="font-size: 14px" class="registration-info">You can find information about the accomodation categories by clicking <a href=#>here</a></p>
-                <p style="font-size: 14px" class="registration-info">or by navigating to the information page.</p>
+                <p style="font-size: 14px" class="registration-info">You can find information about the accomodation categories by clicking <a href=#>here</a> or by navigating to the information page.</p>
                 <p class="registration-info" style="color: #F4FFB0; font-size: 14px;">Important: This will add a cost to your total price.</p>    
 
                 <div class="form-group">
@@ -466,19 +463,17 @@
                 
                 <section class="boxedtext">
                 <p class="lead registration-info">Register this person for the Matsumae Cup 2017. </p>
-                <p class"lead registration-info" style="color: #F4FFB0; font-size: 16px;">Important: The person will not be officially registered as a participant before the confirmation button</p>
-                <p class"lead registration-info" style="color: #F4FFB0; font-size: 16px;">at the button of this page has been pressed, and the confirmation email has been received by the user</p>
-                <p class"lead registration-info" style="color: #F4FFB0; font-size: 16px;">in charge of all registrations.</p>
+                <p class"lead registration-info" style="color: #F4FFB0; font-size: 16px;">Important: The person will not be officially registered as a participant before the confirmation button at the button of this page has been pressed, and the confirmation email has been received by the user in charge of all registrations.</p>
                 
                 <p>
 
             
 
             <span id="TotalPrice" style="padding-top:40px; padding-bottom: 40px; color: lightblue;">Price for this registration: 0 DKK</span>
+                <input type="submit" name="RegisterButton" value="Register" id="CPH1_Button5" class="btn btn-success btn-lg"> 
 
             </p>
 
-                <input type="submit" name="RegisterButton" value="Register" id="CPH1_Button5" class="btn btn-success btn-lg"> 
 
                 </section>
                 </center>
