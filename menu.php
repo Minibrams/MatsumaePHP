@@ -4,7 +4,7 @@
 
 
 
-                <a class="navbar-brand" href="Home.aspx">E-Tilmelding</a>
+                <a class="navbar-brand" href="index.php">E-Tilmelding</a>
 
 
 
@@ -17,8 +17,6 @@
                         <li><a href="register.php">Create a new user</a></li>
 
                         <li><a href="showfighters.php">See All Contestants</a></li>
-
-                        <li><a href="#">Live</a></li>
 
                         
 
@@ -42,7 +40,11 @@
 
                 </nav>
 
-
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
 
 		</nav>
 

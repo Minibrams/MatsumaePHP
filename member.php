@@ -4,7 +4,7 @@
 
 <head>
 
-<title>Member</title>
+<title>Etilmelding Member</title>
 
 
 
@@ -74,7 +74,7 @@ if ($mysqli->connect_errono) {
 
 // To get the telephone prefix from the Land table, I have joined the two tables below 
 
-$sql='SELECT Fornavn, Efternavn, Prefix, Telefon, PASSWORD FROM Person P JOIN Land L ON P.Land = L.Id WHERE Email LIKE "'.$email.'"';   
+$sql='SELECT Fornavn, Efternavn, Telefon, PassWord FROM UserInfo WHERE Email LIKE "'.$email.'"';   
 
 if ($result=$mysqli->query($sql)) {
 
@@ -86,15 +86,11 @@ if ($result=$mysqli->query($sql)) {
 
     $efternavn_DB=$row['Efternavn'];
 
-    $prefix=$row['Prefix'];
-
     $telefon=$row['Telefon'];
 
-    $password_DB=$row['Password'];
+    $password_DB=$row['PassWord'];
 
     
-
-    $telefon_formatted=$prefix.' '.$telefon;
 
 }
 
@@ -111,7 +107,7 @@ $msg = '';
 $msg_color='#333333';
 
 if (isset($_POST['TurnamentButton1'])){
-
+    $_SESSION['Tid'] = $_POST['TurnamentButton1'];
     // Matsumae turnament clicked - redirect to participants page...
 
     include('redirect_signup.html');       
@@ -130,22 +126,25 @@ if (isset($_POST['PasswordButton'])){
 
     $new_password=md5($_POST['NewPW']);
 
-    
+    if ($password_DB == md5($_POST['OldPW'])){
 
-    $sql='UPDATE  Person SET  Password =  "'.$new_password.'" WHERE Email like "'.$email.'"';
+        $sql='UPDATE  UserInfo SET  PassWord =  "'.$new_password.'" WHERE Email like "'.$email.'"';
 
-    if (!$result=$mysqli->query($sql)) {
+        if (!$result=$mysqli->query($sql)) {
 
-		 die('Error: ' . $mysqli->error);
+	    die('Error: ' . $mysqli->error);
 
-	  }
+	}
 
+          $msg='Password updated';
 
+          $msg_color='green';
+      }
+      else{
+          $msg='Old Password Is Incorrect';
 
-      $msg='Password updated';
-
-      $msg_color='green';    
-
+          $msg_color='red';
+      }
 }
 
 
@@ -158,7 +157,7 @@ if (isset($_POST['ProfileButton'])){
 
     // Change Profile
 
-    $sql=sprintf('UPDATE  Person SET  Fornavn =  "%s", Efternavn="%s", Email="%s", Telefon="%s" WHERE Email like "%s"', $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone'], $email);
+    $sql=sprintf('UPDATE  UserInfo SET  Fornavn =  "%s", Efternavn="%s", Email="%s", Telefon="%s" WHERE Email like "%s"', $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone'], $email);
 
      if (!$result=$mysqli->query($sql)) {
 
@@ -166,7 +165,13 @@ if (isset($_POST['ProfileButton'])){
 
  	  }
 
+    $fornavn_DB=$_POST['FirstName'];
 
+    $efternavn_DB=$_POST['LastName'];
+
+    $telefon=$_POST['Phone'];
+
+    $email=$_POST['Email'];
 
        $msg='Profile updated';
 
@@ -251,11 +256,31 @@ if (isset($_POST['ProfileButton'])){
 		                </tr>
 
 		                <tr>
+                    <?php
 
-			                <td><input type="submit" name="TurnamentButton1" value="Matsumae Cup 2017" id="CPH1_ActiveTournamentsTable_Button7_0" class="btn btn-success" style="font-size:Large;"></td>
+                    $sql='SELECT Id, Navn, SidsteTilmelding FROM Tournament WHERE 1';   		       
 
-			                <td style="background-color:LightGreen;">1/18/2017 12:00:00 AM</td>
 
+                    if ($result=$mysqli->query($sql)){
+
+                        if($result->num_rows>0) {
+
+                            /* fetch associative array */
+
+                            while ($row = $result->fetch_assoc()) {
+                            ?>
+
+                            <tr>
+                        	<td><input type="submit" name="TurnamentButton1" value="<?php echo $row['Navn'];?>" id="CPH1_ActiveTournamentsTable_Button7_0" class="btn btn-success" style="font-size:Large;"></td>
+
+			        <td style="background-color:LightGreen;"><?php echo $row['SidsteTilmelding'];?></td>
+                           </tr>
+                           <?php
+                           }
+                        }
+                    }  
+
+                    ?>
 		                </tr>
 
 	                </tbody>
@@ -277,6 +302,7 @@ if (isset($_POST['ProfileButton'])){
                     <div class="PasswordSection">
 
                         <h4 style="color:<?=$msg_color?>"><?=$msg?>
+                        <input name="OldPW" type="password" id="CPH1_TextBoxNew" class="form-control" placeholder="Old Password">
 
                         <input name="NewPW" type="password" id="CPH1_TextBoxNew1" class="form-control" placeholder="New Password">
 
@@ -352,7 +378,7 @@ if (isset($_POST['ProfileButton'])){
 
                        <input name="Email" type="email" id="CPH1_TextBoxEmail" class="form-control" value="<?=$email?>">
 
-                       <input name="Phone" type="tel" id="CPH1_TextBoxPhone" class="form-control" value="<?=$telefon_formatted?>">
+                       <input name="Phone" type="tel" id="CPH1_TextBoxPhone" class="form-control" value="<?=$telefon?>">
 
                        <input type="submit" name="ProfileButton" value="Update Profile" id="CPH1_ButtonSub" class="form-control">
 

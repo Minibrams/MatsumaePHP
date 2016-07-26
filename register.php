@@ -4,7 +4,7 @@
 
 <head>
 
-<title>Matsumae Cup 2017</title>
+<title>Etilmelding New User</title>
 
 <meta charset="utf-8">
 
@@ -154,7 +154,7 @@
 
                            while ($row = $result->fetch_assoc()) {
 
-                               printf('<option value="%s">%s</option>', $row['Prefix'], $row['Landenavn']);
+                               printf('<option value="%s">%s</option>', $row['Id'], $row['Navn']);
 
                                printf('</tr>');  // WHY DO I HAVE THAT HERE? :-O
 
@@ -173,12 +173,6 @@
 	
 
                         </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <input name="ctl00$CPH1$TextBoxCountryCode" type="search" id="CPH1_TextBoxCountryCode" class="form-control" placeholder="Country Code" style="height:30px;width:200px;">
 
                     </div>
 
