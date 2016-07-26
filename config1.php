@@ -1,6 +1,6 @@
 <?php
 $dh_name = "localhost";
-$db_name = "incipio3_anders";
-$db_user = "incipio3_anders";
-$db_pass = "judo117";
+$db_name = "owneroft_Test";
+$db_user = "owneroft_niko";
+$db_pass = "NO0]W2r1&v2[";
 ?>

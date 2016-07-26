@@ -4,7 +4,7 @@
 
 <head>
 
-  <title>Matsumae Cup 2017</title>
+  <title>Etilmelding</title>
 
   <meta charset="utf-8">
 

@@ -4,7 +4,7 @@
 
 <head>
 
-<title>Matsumae Cup 2017</title>
+<title>Etilmelding Sign Up</title>
 
 <meta charset="utf-8">
 
@@ -53,6 +53,8 @@
     $email=$_SESSION['username'];
 
     $UID=$_SESSION['UID'];
+    
+    $Tnavn=$_SESSION['Tid'];
 
 
 
@@ -69,7 +71,26 @@
     }
 
     
+       $sql='select Id, Valuta, Bank from Tournament where Navn like "'.$Tnavn.'"';        
 
+        if ($result=$mysqli->query($sql)) {
+
+            if($result->num_rows === 0) {
+
+                include('redirect_member.html');
+
+           } else {
+
+                $row = $result->fetch_assoc();
+
+                $TID=$row['Id'];
+
+                $Tvaluta=$row['Valuta'];
+                
+               $Tbank=$row['Bank'];
+          }
+                   $result->close();
+           }  
     
 
     // check if this form has already been submitted
@@ -88,11 +109,11 @@
 
         $klub=$_POST['Club'];
 
-        $participate=$_POST['DropDownParticipate'];
+        $V1V=$_POST['DropDownV1'];
 
-        $cup=$_POST['DropDownCup'];
+        $V2V=$_POST['DropDownV2'];
 
-        $camp=$_POST['DropDownCamp'];
+        $V3V=$_POST['DropDownV3'];
 
         $category1=$_POST['Category1'];
 
@@ -102,9 +123,9 @@
 
         // Insert into Database
 
-        $sql=sprintf('INSERT INTO Person (Fornavn, Efternavn, Klub, Kategori_1, Kategori_2, Participate, Accom_Cup, Accom_Camp, Signup, Author) 
+        $sql=sprintf('INSERT INTO SignUp (Fornavn, Efternavn, UserId, Klub, TurneringId, Kategori1, Kategori2, Valg1, Valg2, Valg3) 
 
-        VALUES ("%s","%s","%s",%d,%d,%d,%d,%d,True, %s)', $fornavn, $efternavn, $klub, $category1, $category2, $participate, $camp, $cup, $UID);
+        VALUES ("%s","%s",%d,"%s",%d,%d,%d,%d,%d,%d)', $fornavn, $efternavn, $UID, $klub, $TID, $category1, $category2, $V1V, $V2V, $V3V);
 
         
 
@@ -130,19 +151,21 @@
 
         if (isset($_POST['SendEmail'])){
 
-            
+
 
             $to = $email;
 
-            $subject = "Payment needed for confirmation of registrations for Matsumae Cup 2016";
+            $subject = "Payment needed for confirmation of registrations for $Tnavn";
 
 
 
-            $message = "<h1>You have reserved bookings at Matsumae 2017</h1>";
+            $message = "<h1>We have reserved your bookings for $Tnavn</h1>";
 
-            $message .= "<p>Please transfer the full amount of '.$GrandTotal.' DKr as soon as possible.</p>";
+            $message .= "<p>Please transfer the full amount of '.$GrandTotal.' as soon as possible.</p>";
 
-            $message .= "<p>If you want to double check your reservation details, please do not hesiate to visit us on judo.incipo.dk anytime. You need to log in with this email address in order to see and manage your reservations.</p>";
+            $message .= "<p> $Tbank</p>";
+
+            $message .= "<p>If you want to double check your reservation details, please do not hesiate to visit us on www.etilmelding.com/login.php anytime. You need to log in with this email address in order to see and manage your reservations.</p>";
 
             $message .= "<p>Looking forward to seeing you soon.<br />Kind regards</p>";
 
@@ -152,9 +175,9 @@
 
 
 
-            $header = "From:admin@judo.eller.noget.dk \r\n";
+            $header = "From:etilmelding@etilmelding.com \r\n";
 
-            $header .= "Cc:anders@brams.dk \r\n";
+            $header .= "CC: \r\n";
 
             $header .= "MIME-Version: 1.0\r\n";
 
@@ -190,7 +213,7 @@
 
             // Delete from Database
 
-            $sql=sprintf('DELETE FROM Person WHERE Id=%s',$ButtonId);
+            $sql=sprintf('DELETE FROM SignUp WHERE Id=%s',$ButtonId);
 
             if (!$result=$mysqli->query($sql)) {
 
@@ -199,8 +222,8 @@
         	 }
 
         }
-
     
+      
 
 ?>
 
@@ -218,9 +241,8 @@
 
            <section class="jumbotron" style="background-color: #363636;">
 
-          <h2 class="text-center">Matsumae Cup 2017</h2>
-
-          <h4 class="text-center">Fill out the form below to register a person as a participant for the Matsumae Cup 2017</h4>
+          <h2 class="text-center"><?php echo $Tnavn;?></h2>
+          <h4 class="text-center">Fill out the form below to register a person as a participant for the <?php echo $Tnavn;?></h4>
           <p class="text-center">When you've registered as many people as you need, go to the bottom of the page to confirm the registrations.</p>
 
               
@@ -281,14 +303,14 @@
 
 
 
-                        $sql = "SELECT * FROM Kategori";
+                        $sql = "SELECT * FROM Choice WHERE Search LIKE 'K1'";
 
                         if ($result=$mysqli->query($sql)){
-
+                           printf('<option value="0" price="0">Select</option>');
                            while ($row = $result->fetch_assoc()) {
-
-                               printf('<option value="%s">%s</option>', $row['Id'], $row['Navn']);
-
+                               if($row['TurneringId']===$TID){
+                                   printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Pris'],$row['Tekst']);
+                               }
                            }
 
 
@@ -327,13 +349,15 @@
 
                     <?php
 
-                        $sql = "SELECT * FROM Kategori";
+                        $sql = "SELECT * FROM Choice WHERE Search LIKE 'K2'";
 
                         if ($result=$mysqli->query($sql)){
-
+                           printf('<option value="0" price="0">Select</option>');
                            while ($row = $result->fetch_assoc()) {
 
-                               printf('<option value="%s">%s</option>', $row['Id'],$row['Navn']);
+                               if($row['TurneringId']===$TID){
+                                   printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Pris'],$row['Tekst']);
+                               }
 
                            }
 
@@ -352,24 +376,26 @@
  
                 
                 <section class="boxedtext">
-                <p style="font-size: 14px;" class="registration-info">If you want to participate in the camp for the Matsumae Cup 2017, choose the appropriate option in the dropdown below.</p>
+                <p style="font-size: 14px;" class="registration-info">If you want to participate in the camp for the <?php echo $Tnavn;?>, choose the appropriate option in the dropdown below.</p>
                 <p class="registration-info" style="color: #F4FFB0; font-size: 14px;">Important: This will add a cost to your total price.</p>
 
                 <div class="form-group">
 
-                <select name="DropDownParticipate" id="DropDownParticipate" class="form-control" style="height:40px;width:200px;">
+                <select name="DropDownV1" id="DropDownV1" class="form-control" style="height:40px;width:200px;">
 
                     <?php
 
                       // Load Categories from database 
 
-                        $sql = 'SELECT * FROM Participation';
+                        $sql = "SELECT * FROM Choice WHERE Search LIKE 'V1'";
 
                         if ($result=$mysqli->query($sql)){
-
+                           printf('<option value="0" price="0">Select</option>');
                            while ($row = $result->fetch_assoc()) {
 
-                               printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Price'], $row['Label']);
+                               if($row['TurneringId']===$TID){
+                                   printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Pris'],$row['Tekst']);
+                               }
 
                            }
 
@@ -390,24 +416,27 @@
 
                 <section class="boxedtext">
                 <p style="font-size: 14px;" class="registration-info">If you want accomodation for the Matsumae Cup, choose the appropriate accomodation category below.</p>
-                <p style="font-size: 14px" class="registration-info">You can find information about the accomodation categories by clicking <a href=#>here</a> or by navigating to the information page.</p>
+				<p style="font-size: 14px" class="registration-info">You can find information about the accomodation categories by clicking <a href=#>here</a> or by navigating to the information page.</p>
                 <p class="registration-info" style="color: #F4FFB0; font-size: 14px;">Important: This will add a cost to your total price.</p>    
 
                 <div class="form-group">
 
-                <select name="DropDownCup" id="DropDownCup" class="form-control" style="height:40px;width:200px;">
+                <select name="DropDownV2" id="DropDownV2" class="form-control" style="height:40px;width:200px;">
 
                 <?php
 
                   // Load Categories from database 
 
-                    $sql = 'SELECT * FROM Cup';
+                    $sql = "SELECT * FROM Choice WHERE Search LIKE 'V2'";
 
                     if ($result=$mysqli->query($sql)){
 
+                       printf('<option value="0" price="0">Select</option>');
                        while ($row = $result->fetch_assoc()) {
 
-                           printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Price'],$row['Label']);
+                               if($row['TurneringId']===$TID){
+                                   printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Pris'],$row['Tekst']);
+                               }
 
                        }
 
@@ -431,19 +460,21 @@
 
                 <div class="form-group">
 
-                    <select name="DropDownCamp" id="DropDownCamp" class="form-control" style="height:40px;width:200px;">
+                    <select name="DropDownV3" id="DropDownV3" class="form-control" style="height:40px;width:200px;">
 
                     <?php
 
                       // Load Categories from database 
 
-                        $sql = 'SELECT * FROM Camp';
+                        $sql = "SELECT * FROM Choice WHERE Search LIKE 'V3'";
 
                         if ($result=$mysqli->query($sql)){
-
+                           printf('<option value="0" price="0">Select</option>');
                            while ($row = $result->fetch_assoc()) {
 
-                               printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Price'],$row['Label']);
+                               if($row['TurneringId']===$TID){
+                                   printf('<option value="%s" price="%s">%s</option>', $row['Id'], $row['Pris'],$row['Tekst']);
+                               }
 
                            }
 
@@ -462,18 +493,18 @@
                 </div>
                 
                 <section class="boxedtext">
-                <p class="lead registration-info">Register this person for the Matsumae Cup 2017. </p>
+                <p class="lead registration-info">Register this person for the <?php echo $Tnavn;?>. </p>
                 <p class"lead registration-info" style="color: #F4FFB0; font-size: 16px;">Important: The person will not be officially registered as a participant before the confirmation button at the button of this page has been pressed, and the confirmation email has been received by the user in charge of all registrations.</p>
                 
                 <p>
 
             
 
-            <span id="TotalPrice" style="padding-top:40px; padding-bottom: 40px; color: lightblue;">Price for this registration: 0 DKK</span>
-                <input type="submit" name="RegisterButton" value="Register" id="CPH1_Button5" class="btn btn-success btn-lg"> 
-
+            <span id="TotalPrice" style="padding-top:40px; padding-bottom: 40px; color: lightblue;">Price for this registration: 0 <?= $Tvaluta ?></span>
+			<input type="submit" name="RegisterButton" value="Register" id="CPH1_Button5" class="btn btn-success btn-lg"> 
             </p>
 
+                
 
                 </section>
                 </center>
@@ -494,47 +525,66 @@
 
                     function calculate(){
 
-                         var selected = $('#DropDownCup').find('option:selected');
 
-                         var price1 = parseInt(selected.attr('price'));
+                         var selected1 = $('#DropDownFirstCategory').find('option:selected');
+
+                         var price1 = parseInt(selected1.attr('price'));
 
 
-
-                         selected2 = $('#DropDownCamp').find('option:selected');
+                         var selected2 = $('#DropDownSecondCategory').find('option:selected');
 
                          var price2 = parseInt(selected2.attr('price'));
 
 
-
-                         selected3 = $('#DropDownParticipate').find('option:selected');
+                         var selected3 = $('#DropDownV2').find('option:selected');
 
                          var price3 = parseInt(selected3.attr('price'));
 
 
 
-                         var total = price1+price2+price3;
+                         selected4 = $('#DropDownV3').find('option:selected');
 
-                         $('#TotalPrice').html("That will be "+total+" Kr!"); 
+                         var price4 = parseInt(selected4.attr('price'));
+
+
+
+                         selected5 = $('#DropDownV1').find('option:selected');
+
+                         var price5 = parseInt(selected5.attr('price'));
+
+
+
+                         var total = price1+price2+price3+price4+price5;;;
+
+                         $('#TotalPrice').html("That will be "+total+" <?= $Tvaluta ?>!"); 
 
                      }
 
-                     
+                     $('#DropDownFirstCategory').change(function(){
 
-                        
+                        calculate();
 
-                    $('#DropDownCup').change(function(){
+                    }); 
+
+                    $('#DropDownSecondCategory').change(function(){
+
+                        calculate();
+
+                    });  
+
+                    $('#DropDownV2').change(function(){
 
                         calculate();
 
                     });
 
-                    $('#DropDownCamp').change(function(){
+                    $('#DropDownV3').change(function(){
 
                         calculate();
 
                     });
 
-                    $('#DropDownParticipate').change(function(){
+                    $('#DropDownV1').change(function(){
 
                         calculate();
 
@@ -576,17 +626,17 @@
 
       		       $GrandTotal=0;
 
-      		       $sql='SELECT P.Id as Id, Fornavn, Efternavn, K1.Navn as K1, K2.Navn as K2, C.Label as Cup, A.Label as Camp,R.Label as Participate, A.Price+R.Price+C.Price as Price FROM Person P  LEFT OUTER join Cup C on P.Accom_Cup=C.Id LEFT OUTER JOIN Camp A on P.Accom_Camp=A.Id LEFT OUTER JOIN Participation R on P.Participate=R.Id LEFT OUTER JOIN Kategori K1 on P.Kategori_1=K1.Id LEFT OUTER JOIN Kategori K2 on P.Kategori_2=K2.Id WHERE Signup=1 and Author = '.$UID;      		       
+      		       $sql='SELECT P.Id as Id, P.Fornavn as Fornavn, P.Efternavn as Efternavn, K1.Tekst as K1, K2.Tekst as K2, C.Tekst as V1, A.Tekst as V2,R.Tekst as V3, K1.Pris as K1p, K2.Pris as K2p, A.Pris as V1p, C.Pris as V2p, R.Pris as V3p FROM SignUp P LEFT OUTER join Choice C on P.Valg1=C.Id LEFT OUTER JOIN Choice A on P.Valg2=A.Id LEFT OUTER JOIN Choice R on P.Valg3=R.Id LEFT OUTER JOIN Choice K1 on P.Kategori1=K1.Id LEFT OUTER JOIN Choice K2 on P.Kategori2=K2.Id WHERE P.UserId= '.$UID.' AND P.TurneringId LIKE '.$TID;      		       
 
                    if ($result=$mysqli->query($sql)){
 
                        while ($row = $result->fetch_assoc()) {
+				$price =$row['K1p']+$row['K2p']+$row['V1p']+$row['V2p']+$row['V3p'];
+                           echo sprintf('<tr style="color:White;background-color:#363636;"> <td>
 
-                           echo sprintf('<tr style="color:White;"> <td>
+                               <Button type="submit" name="DeleteButton" value="%s" class="btn btn-danger">Delete</button></td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>', $row['Id'], $row['Fornavn'], $row['Efternavn'],$row['K1'],$row['K2'],$row['V1'],$row['V2'],$row['V3'], $price);
 
-                               <Button type="submit" name="DeleteButton" value="%s" class="btn btn-danger">Delete</button></td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>', $row['Id'], $row['Fornavn'], $row['Efternavn'],$row['K1'],$row['K2'],$row['Participate'],$row['Cup'],$row['Camp'], $row['Price']);
-
-                               $GrandTotal+=$row['Price'];
+                               $GrandTotal+=$price;
 
                        }
 
@@ -604,11 +654,11 @@
 
       	        
 
-      	        <h3 style="font-size: 14px">The total price for all registrations: <?= $GrandTotal ?> DKK</h3>
+      	        <h3 style="font-size: 14px">The total price for all registrations: <?= $GrandTotal ?> <?= $Tvaluta ?></h3>
 
       	        <div class="text-center">
 
-                    <input type="submit" name="SendEmail" value="Confirm" id="ButtonSendEmail" class="btn btn-primary btn-lg">
+                    <input type="submit" name="SendEmail" value="Confirm" id="SendEmail" class="btn btn-primary btn-lg">
 
                     <p style="font-size: 14px" class="lead">Confirm registrations and send confirmation email</p>
 
