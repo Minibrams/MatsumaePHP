@@ -60,6 +60,14 @@ $email=$_SESSION['username'];
 
 $name=$_SESSION['greeting'];
 
+$TID=$_SESSION['Tid'];
+
+$Tdate=$_SESSION['SidsteTilmelding'];
+
+$Tnavn=$_SESSION['Tnavn'];
+
+
+
 
 
 $mysqli = new mysqli($dh_name, $db_user, $db_pass, $db_name);
@@ -74,13 +82,15 @@ if ($mysqli->connect_errono) {
 
 // To get the telephone prefix from the Land table, I have joined the two tables below 
 
-$sql='SELECT Fornavn, Efternavn, Telefon, PassWord FROM UserInfo WHERE Email LIKE "'.$email.'"';   
+$sql='SELECT Id, Fornavn, Efternavn, Telefon, PassWord FROM UserInfo WHERE Email LIKE "'.$email.'"';   
 
 if ($result=$mysqli->query($sql)) {
 
     // This is for match in terms of email, we just need to check the encrypted password and then enable the session keys...
 
     $row = $result->fetch_assoc();
+
+    $UID=$row['Id'];
 
     $fornavn_DB=$row['Fornavn'];
 
@@ -90,11 +100,24 @@ if ($result=$mysqli->query($sql)) {
 
     $password_DB=$row['PassWord'];
 
-    
-
 }
 
+// check if this is to delete a row in the participants table
 
+if (isset($_POST['DeleteButton'])){
+
+  $ButtonId=$_POST['DeleteButton'];
+
+  // Delete from Database
+
+  $sql=sprintf('DELETE FROM SignUp WHERE Id=%s',$ButtonId);
+
+  if (!$result=$mysqli->query($sql)) {
+
+      die('Error: ' . $mysqli->error);
+
+  }
+}
 
 
 
@@ -106,13 +129,49 @@ $msg = '';
 
 $msg_color='#333333';
 
-if (isset($_POST['TurnamentButton1'])){
-    $_SESSION['Tid'] = $_POST['TurnamentButton1'];
+if (isset($_POST['TurnamentButton11'])){
+    $Tnavn = $_POST['TurnamentButton11'];
     // Matsumae turnament clicked - redirect to participants page...
+       $sql='select Id, Navn, Valuta, Bank, SidsteTilmelding from Tournament where Navn like "'.$Tnavn.'"';        
 
-    include('redirect_signup.html');       
+        if ($result=$mysqli->query($sql)) {
+
+            if($result->num_rows === 0) {
+
+                include('redirect_member.html');
+
+           } else {
+
+                $row = $result->fetch_assoc();
+
+                $TID=$row['Id'];
+
+                $_SESSION['Tid']=$row['Id'];
+
+                $Tnavn=$row['Navn'];
+
+                $_SESSION['Tnavn']=$row['Navn'];
+                
+               $Tvaluta=$row['Valuta'];
+                
+               $Tbank=$row['Bank'];
+
+               $Tdate=$row['SidsteTilmelding'];
+
+               $_SESSION['SidsteTilmelding']=$row['SidsteTilmelding'];
+          }
+                   $result->close();
+           }  
+          
 
 }
+
+if (isset($_POST['SignupButton'])){
+   
+      include('redirect_signup.html');
+ 
+}
+
 
 
 
@@ -181,7 +240,57 @@ if (isset($_POST['ProfileButton'])){
 
 }
 
+        if (isset($_POST['SendEmail'])){
 
+
+
+            $to = $email;
+
+            $subject = "Payment needed for confirmation of registrations for $Tnavn";
+
+
+
+            $message = "<h1>We have reserved your bookings for $Tnavn</h1>";
+
+            $message .= "<p>Please transfer the full amount of '.$GrandTotal.' as soon as possible.</p>";
+
+            $message .= "<p> $Tbank</p>";
+
+            $message .= "<p>If you want to double check your reservation details, please do not hesiate to visit us on www.etilmelding.com/login.php anytime. You need to log in with this email address in order to see and manage your reservations.</p>";
+
+            $message .= "<p>Looking forward to seeing you soon.<br />Kind regards</p>";
+
+            $message .= "<p>Klubben</p>";
+
+            
+
+
+
+            $header = "From:etilmelding@etilmelding.com \r\n";
+
+            $header .= "CC: \r\n";
+
+            $header .= "MIME-Version: 1.0\r\n";
+
+            $header .= "Content-type: text/html\r\n";
+
+
+
+            $retval = mail ($to,$subject,$message,$header);
+
+
+
+            if( $retval == true ) {
+
+               echo "Message sent successfully...";
+
+            }else {
+
+               echo "Message could not be sent...";
+
+            }
+
+        }
 
 
 
@@ -199,7 +308,7 @@ if (isset($_POST['ProfileButton'])){
 
                 <section class="container" style="text-align: center">
 
-                    <h2 style="padding-bottom:20px"><?=$name?>, welcome to the Userpage on ETilmelding.com! </h2>
+                    <h2 style="padding-bottom:20px"><?=$Tnavn?>, welcome to the Userpage on ETilmelding.com! </h2>
 
                         <section class="col-lg-4">
 
@@ -209,56 +318,20 @@ if (isset($_POST['ProfileButton'])){
 
                             </p>
 
-                        </section>
-
-                        <section class="col-lg-4" style="border-radius:5px; background-color:#404040;">
-
-                            <p style="font-size: 14px; color:#B4FFA1">
-
-                                By pressing the tournament name, you will be taken to the signup form for the given tournament, where you will be prompted to enter all needed information.
-
-                            </p>
-
-                        </section>
-
-                        <section class="col-lg-4">
-
-                            <p style="font-size: 14px; color:#7ADFEB">
-
-                                If you need to change your contact information or your password, these options can be found at the bottom of this page.
-
-                            </p>
-
-                        </section>
-
-                </section>
-
-
-
-                <div style="padding-bottom:40px">
-
-                    <!-- This is here for spacing purposes --> 
-
-                </div>
-
-
-
-                <div style="align: center;">
-
 	                <table cellspacing="0" cellpadding="10" align="Center" rules="all" border="1" id="CPH1_ActiveTournamentsTable" style="border-collapse:collapse;" class="center">
 
 		            <tbody align="center">
 
 		                <tr>
 
-			                <th scope="col">Active Tournaments</th><th scope="col">Last Sign Up Date</th>
+			                <th scope="col">Active Tournaments</th>
 
 		                </tr>
 
 		                <tr>
                     <?php
 
-                    $sql='SELECT Id, Navn, SidsteTilmelding FROM Tournament WHERE 1';   		       
+                    $sql='SELECT Navn, SidsteTilmelding FROM Tournament WHERE 1';   		       
 
 
                     if ($result=$mysqli->query($sql)){
@@ -271,9 +344,8 @@ if (isset($_POST['ProfileButton'])){
                             ?>
 
                             <tr>
-                        	<td><input type="submit" name="TurnamentButton1" value="<?php echo $row['Navn'];?>" id="CPH1_ActiveTournamentsTable_Button7_0" class="btn btn-success" style="font-size:Large;"></td>
+                        	<td><input type="submit" name="TurnamentButton11" value="<?php echo $row['Navn'];?>" id="CPH1_ActiveTournamentsTable_Button7_0" class="btn btn-success" style="font-size:Large;"></td>
 
-			        <td style="background-color:LightGreen;"><?php echo $row['SidsteTilmelding'];?></td>
                            </tr>
                            <?php
                            }
@@ -286,9 +358,36 @@ if (isset($_POST['ProfileButton'])){
 	                </tbody>
 
 	                </table>
+                        </section>
 
-                </div>
+                        <section class="col-lg-4" style="border-radius:5px; background-color:#404040;">
 
+                            <p style="font-size: 14px; color:#B4FFA1">
+
+                                By pressing the tournament name, you will be taken to the signup form for the given tournament, where you will be prompted to enter all needed information.
+
+                            </p>
+                            <div class="form-inline">
+
+                            <button type="submit" name="SignupButton" id="CPH1_ButtonSignup" class="form-control">
+                            <img src="img/Add.png">
+                            Add new
+                            </button>
+                            <button type="submit" name="InfoButton" Info" id="CPH1_ButtonInfo" class="form-control">
+                            <img src="img/Info.png">
+                            <?=$Tnavn?> Info
+                            </button>
+                            </div>
+                        </section>
+
+                        <section class="col-lg-4">
+
+                            <p style="font-size: 14px; color:#7ADFEB">
+
+                                If you need to change your contact information or your password, these options can be found at the bottom of this page.
+
+                            </p>
+       
                     
 
                 <br>
@@ -415,9 +514,108 @@ if (isset($_POST['ProfileButton'])){
                 
 
                 </script>
+                        </section>
+
+                </section>
+
+                <div style="padding-bottom:50px">
+
+                    <!-- This is here for spacing purposes --> 
+
+                </div>
 
                 
 
+<?php                
+//Start Tilmeldinger
+?>
+<div class="text-center">
+   <h2 style="padding-bottom:20px">Here are your SignUps for '<?=$Tnavn?>' </h2>
+                <div>
+
+      		    <?php
+
+      		       // List all signups here...
+
+      		       $GrandTotal=0;
+
+      		       $sql='SELECT P.Id as Id, P.Fornavn as Fornavn, P.Efternavn as Efternavn, K1.Tekst as K1, K2.Tekst as K2, C.Tekst as V1, A.Tekst as V2,R.Tekst as V3, K1.Pris as K1p, K2.Pris as K2p, A.Pris as V1p, C.Pris as V2p, R.Pris as V3p FROM SignUp P LEFT OUTER join Choice C on P.Valg1=C.Id LEFT OUTER JOIN Choice A on P.Valg2=A.Id LEFT OUTER JOIN Choice R on P.Valg3=R.Id LEFT OUTER JOIN Choice K1 on P.Kategori1=K1.Id LEFT OUTER JOIN Choice K2 on P.Kategori2=K2.Id WHERE P.UserId= '.$UID.' AND P.TurneringId LIKE '.$TID;      		       
+
+                   if ($result=$mysqli->query($sql)){
+                    if($result->num_rows > 0) {                     
+                                      
+                if($Tdate <= date("Y-m-d H:i:s")){
+                               
+                    ?>
+      	            <table class="table table-hover table-bordered" cellspacing="0" cellpadding="4" id="CPH1_GridView11" style="color:black;border-collapse:collapse;">
+
+      		    <tbody>
+
+      		    <tr style="color:White;background-color:#990000;font-weight:bold;">
+      			  <th><a href="#" style="color:White;">First Name</a></th><th><a href="#" style="color:White;">Last Name</a></th><th>Prim. Category</th><th>Sec. Category</th><th>Camp</th><th>Accommodation Cup</th><th>Accommodation Camp</th><th><a href="#" style="color:White;">Price</a></th>
+
+      		    </tr>
+                    <?php
+      		    while ($row = $result->fetch_assoc()) {
+			$price =$row['K1p']+$row['K2p']+$row['V1p']+$row['V2p']+$row['V3p'];
+
+                        echo sprintf('<tr style="color:White;background-color:#363636;">
+ <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>', $row['Fornavn'], $row['Efternavn'],$row['K1'],$row['K2'],$row['V1'],$row['V2'],$row['V3'], $price);
+                    }
+                }else{
+                      ?>
+                      <table class="table table-hover table-bordered" cellspacing="0" cellpadding="4" id="CPH1_GridView11" style="color:black;border-collapse:collapse;">
+
+                      <tbody>
+
+                      <tr style="color:White;background-color:#990000;font-weight:bold;">
+                      <th>&nbsp;</th><th><a href="#" style="color:White;">First Name</a></th><th><a href="#" style="color:White;">Last Name</a></th><th>Prim. Category</th><th>Sec. Category</th><th>Camp</th><th>Accommodation Cup</th><th>Accommodation Camp</th><th><a href="#" style="color:White;">Price</a></th>
+
+                      </tr>
+                      <?php
+      		      while ($row = $result->fetch_assoc()) {
+			$price =$row['K1p']+$row['K2p']+$row['V1p']+$row['V2p']+$row['V3p'];   
+
+                        echo sprintf('<tr style="color:White;background-color:#363636;"> <td>
+                        <input type="image" src="img/delete.jpg" name="DeleteButton" value="%s"></></td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>', $row['Id'], $row['Fornavn'], $row['Efternavn'],$row['K1'],$row['K2'],$row['V1'],$row['V2'],$row['V3'], $price);
+                     }
+                 }
+                 $GrandTotal+=$price;
+
+                 ?>
+      	        </tbody>
+
+      	        </table>
+      	        <h3 style="font-size: 14px">The total price for all registrations: <?= $GrandTotal ?> <?= $Tvaluta ?></h3>
+
+      	        <div class="text-center">
+
+                    <input type="submit" name="SendEmail" value="Confirm" id="SendEmail" class="btn btn-primary btn-lg">
+
+                    <p style="font-size: 14px" class="lead">Confirm registrations and send confirmation email</p>
+
+               </div>
+<?php
+                     }
+                     else{
+                         printf('<p>No records found....</p>');
+                     }
+                    }
+
+                    //$result->close();  /* free up resources */                    
+
+      		       
+
+      		    ?>
+
+
+
+               </div> 
+
+            </div>
+<?php
+//Slut Tilmeldinger
+?>
             </section>             <!-- End Jumbotron section--> 
 
         </section>

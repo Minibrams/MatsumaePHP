@@ -32,6 +32,11 @@
 
       include('menu.php');
 
+
+      $TID=$_SESSION['Tid'];
+      $Tnavn=$_SESSION['Tnavn'];
+
+
       require_once('config1.php');
 
 
@@ -49,19 +54,23 @@
 if (isset($_POST['TurnamentButtonAll'])){
     $Tnavn = $_POST['TurnamentButtonAll'];
     
-       $sql='select Id from Tournament where Navn like "'.$Tnavn.'"';        
+       $sql='select Id, Navn from Tournament where Navn like "'.$Tnavn.'"';        
 
         if ($result=$mysqli->query($sql)) {
 
             if($result->num_rows === 0) {
 
-                include('redirect_member.html');
+                include('redirect_home.html');
 
            } else {
 
                 $row = $result->fetch_assoc();
 
                 $TID=$row['Id'];
+
+                $_SESSION['Tid']=$row['Id'];
+                $Tnavn==$row['Navn'];
+                $_SESSION['Tnavn']=$row['Navn'];
           }
                    $result->close();
            } 
@@ -130,17 +139,7 @@ if (isset($_POST['TurnamentButtonAll'])){
 
               <center>
 
-              <div class="<?php echo $hidemydiv ?>">
-
-                 <table class="table table-hover" cellspacing="0" cellpadding="4" style="color:#333333;border-collapse:collapse;">
-
-                 <tbody>
-
-                   <tr style="color:White;background-color:#990000;font-weight:bold;">
-
-                      <th style="color:White;">Firstname</th><th style="color:White;">Lastname</th><th style="color:White;">Category</th><th style="color:White;">Club</th><th style="color:White;">Country</a></th>
-
-                   </tr>
+              
 
    
 
@@ -152,8 +151,19 @@ if (isset($_POST['TurnamentButtonAll'])){
 		$sql1='SELECT pp.Id as Id, pp.Fornavn as Fornavn, pp.Efternavn as Efternavn, pp.Klub as Klub, K11.Tekst as K1, LL.Navn as Land FROM SignUp pp LEFT OUTER JOIN UserInfo UU ON pp.UserId=UU.Id LEFT OUTER JOIN Land LL ON UU.Land = LL.Id LEFT OUTER JOIN Choice K11 ON pp.Kategori1=K11.Id WHERE pp.TurneringId ='.$TID.' UNION ALL SELECT p.Id as Id, p.Fornavn as Fornavn, p.Efternavn as Efternavn, p.Klub as Klub, K1.Tekst as K1, L.Navn as Land FROM SignUp p LEFT OUTER JOIN UserInfo U ON p.UserId=U.Id LEFT OUTER JOIN Land L ON U.Land = L.Id LEFT OUTER JOIN Choice K1 ON p.Kategori2=K1.Id WHERE p.TurneringId ='.$TID;
 		
                 if ($result1=$mysqli->query($sql1)){
-		    if($result1->num_rows>0) {
+		    if($result1->num_rows>0 && $result1->num_rows>0) {
+?>
 
+                 <table class="table table-hover" cellspacing="0" cellpadding="4" style="color:#333333;border-collapse:collapse;">
+
+                 <tbody>
+
+                   <tr style="color:White;background-color:#990000;font-weight:bold;">
+
+                      <th style="color:White;">Firstname</th><th style="color:White;">Lastname</th><th style="color:White;">Category</th><th style="color:White;">Club</th><th style="color:White;">Country</a></th>
+
+                   </tr>
+<?php
                        /* fetch associative array */
 
                        $i=1;
@@ -170,14 +180,12 @@ if (isset($_POST['TurnamentButtonAll'])){
 				        echo '</tbody></table>';
                              } else {
 
-                                printf('<p>No records found....</p>');
+                                printf('<p>Records not activated yet, please come back later....</p>');
                              }
                            //$result->close();  /* free up resources */
                         }
 
                     ?>  
-
-              </div>
               </center>
 
           </div>
