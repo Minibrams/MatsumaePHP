@@ -46,15 +46,13 @@
 
 
 
-
-
     // Then prepare ...
 
     $email=$_SESSION['username'];
 
     $UID=$_SESSION['UID'];
     
-    $Tnavn=$_SESSION['Tid'];
+    $TID=$_SESSION['Tid'];
 
 
 
@@ -71,7 +69,7 @@
     }
 
     
-       $sql='select Id, Valuta, Bank from Tournament where Navn like "'.$Tnavn.'"';        
+       $sql='select Id, Valuta, Navn, Bank from Tournament where Id like "'.$TID.'"';        
 
         if ($result=$mysqli->query($sql)) {
 
@@ -84,6 +82,8 @@
                 $row = $result->fetch_assoc();
 
                 $TID=$row['Id'];
+
+                $Tnavn=$row['Navn'];
 
                 $Tvaluta=$row['Valuta'];
                 
@@ -140,89 +140,15 @@
           $msg='Registration on file';
 
           $msg_color='green';    
-
+          include('redirect_member.html');
     }
 
-    
+    if (isset($_POST['BackButton'])){
+   
+      include('redirect_member.html');
+ 
+}
 
-    
-
-        // Check if this is to Send email
-
-        if (isset($_POST['SendEmail'])){
-
-
-
-            $to = $email;
-
-            $subject = "Payment needed for confirmation of registrations for $Tnavn";
-
-
-
-            $message = "<h1>We have reserved your bookings for $Tnavn</h1>";
-
-            $message .= "<p>Please transfer the full amount of '.$GrandTotal.' as soon as possible.</p>";
-
-            $message .= "<p> $Tbank</p>";
-
-            $message .= "<p>If you want to double check your reservation details, please do not hesiate to visit us on www.etilmelding.com/login.php anytime. You need to log in with this email address in order to see and manage your reservations.</p>";
-
-            $message .= "<p>Looking forward to seeing you soon.<br />Kind regards</p>";
-
-            $message .= "<p>Klubben</p>";
-
-            
-
-
-
-            $header = "From:etilmelding@etilmelding.com \r\n";
-
-            $header .= "CC: \r\n";
-
-            $header .= "MIME-Version: 1.0\r\n";
-
-            $header .= "Content-type: text/html\r\n";
-
-
-
-            $retval = mail ($to,$subject,$message,$header);
-
-
-
-            if( $retval == true ) {
-
-               echo "Message sent successfully...";
-
-            }else {
-
-               echo "Message could not be sent...";
-
-            }
-
-        }
-
-        
-
-
-
-        // check if this is to delete a row in the participants table
-
-        if (isset($_POST['DeleteButton'])){
-
-            $ButtonId=$_POST['DeleteButton'];
-
-            // Delete from Database
-
-            $sql=sprintf('DELETE FROM SignUp WHERE Id=%s',$ButtonId);
-
-            if (!$result=$mysqli->query($sql)) {
-
-        		 die('Error: ' . $mysqli->error);
-
-        	 }
-
-        }
-    
       
 
 ?>
@@ -233,13 +159,16 @@
 
     <section class="container">
 
-     <div class="form-inline">
-
-
+     <div class="left">
+          <button type="submit" name="BackButton" id="CPH1_ButtonSignup" class="btn btn-primary btn-lg">
+          <img src="img/left-arrow.png">
+          Back
+          </button>
 
             </div>
 
            <section class="jumbotron" style="background-color: #363636;">
+
 
           <h2 class="text-center"><?php echo $Tnavn;?></h2>
           <h4 class="text-center">Fill out the form below to register a person as a participant for the <?php echo $Tnavn;?></h4>
@@ -597,78 +526,6 @@
 
 
             </form>
-
-        
-
-
-
-              <br>
-
-              <br>
-
-              <div class="text-center">
-
-                <div>
-
-      	        <table class="table table-hover table-bordered" cellspacing="0" cellpadding="4" id="CPH1_GridView1" style="color:black;border-collapse:collapse;">
-
-      		    <tbody>
-
-      		    <tr style="color:White;background-color:#990000;font-weight:bold;">
-
-      			  <th>&nbsp;</th><th><a href="#" style="color:White;">First Name</a></th><th><a href="#" style="color:White;">Last Name</a></th><th>Prim. Category</th><th>Sec. Category</th><th>Camp</th><th>Accommodation Cup</th><th>Accommodation Camp</th><th><a href="#" style="color:White;">Price</a></th>
-
-      		    </tr>
-
-      		    <?php
-
-      		       // List all signups here...
-
-      		       $GrandTotal=0;
-
-      		       $sql='SELECT P.Id as Id, P.Fornavn as Fornavn, P.Efternavn as Efternavn, K1.Tekst as K1, K2.Tekst as K2, C.Tekst as V1, A.Tekst as V2,R.Tekst as V3, K1.Pris as K1p, K2.Pris as K2p, A.Pris as V1p, C.Pris as V2p, R.Pris as V3p FROM SignUp P LEFT OUTER join Choice C on P.Valg1=C.Id LEFT OUTER JOIN Choice A on P.Valg2=A.Id LEFT OUTER JOIN Choice R on P.Valg3=R.Id LEFT OUTER JOIN Choice K1 on P.Kategori1=K1.Id LEFT OUTER JOIN Choice K2 on P.Kategori2=K2.Id WHERE P.UserId= '.$UID.' AND P.TurneringId LIKE '.$TID;      		       
-
-                   if ($result=$mysqli->query($sql)){
-
-                       while ($row = $result->fetch_assoc()) {
-				$price =$row['K1p']+$row['K2p']+$row['V1p']+$row['V2p']+$row['V3p'];
-                           echo sprintf('<tr style="color:White;background-color:#363636;"> <td>
-
-                               <Button type="submit" name="DeleteButton" value="%s" class="btn btn-danger">Delete</button></td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>', $row['Id'], $row['Fornavn'], $row['Efternavn'],$row['K1'],$row['K2'],$row['V1'],$row['V2'],$row['V3'], $price);
-
-                               $GrandTotal+=$price;
-
-                       }
-
-                    }
-
-                    $result->close();  /* free up resources */                    
-
-      		       
-
-      		    ?>
-
-      	        </tbody>
-
-      	        </table>
-
-      	        
-
-      	        <h3 style="font-size: 14px">The total price for all registrations: <?= $GrandTotal ?> <?= $Tvaluta ?></h3>
-
-      	        <div class="text-center">
-
-                    <input type="submit" name="SendEmail" value="Confirm" id="SendEmail" class="btn btn-primary btn-lg">
-
-                    <p style="font-size: 14px" class="lead">Confirm registrations and send confirmation email</p>
-
-               </div>
-
-               </div> 
-
-            </div>
-
-         
 
                
 
